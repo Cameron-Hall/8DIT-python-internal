@@ -9,48 +9,76 @@ class Character:
         self.board = board
     
     def move_up(self, board):
-        board.tilemap[self.y][self.x].configure(bg="green")
         self.y -= 1
         try:
-            if self.y < 0:
-                self.y = 0
-            self.update_character(board)
+            if self.y < 0 or not self.check_validity(board):
+                raise IndexError
+            self.update_character(board, "up")
         except IndexError:
             self.y += 1
-            self.update_character(board)
 
     def move_down(self, board):
-        board.tilemap[self.y][self.x].configure(bg="green")
         self.y += 1
         try:
-            self.update_character(board)
+            if self.y > board.WINDOW_HEIGHT or not self.check_validity(board):
+                raise IndexError
+            self.update_character(board, "down")
         except IndexError:
             self.y -= 1
-            self.update_character(board)
 
     def move_right(self, board):
-        board.tilemap[self.y][self.x].configure(bg="green")
         self.x += 1
         try:
-            self.update_character(board)
+            if self.x > board.WINDOW_WIDTH or not self.check_validity(board):
+                raise IndexError
+            self.update_character(board, "right")
         except IndexError:
             self.x -= 1
-            self.update_character(board)
 
     def move_left(self, board):
-        board.tilemap[self.y][self.x].configure(bg="green")
         self.x -= 1
         try:
-            if self.x < 0:
-                self.x += 1
-            self.update_character(board)
+            if self.x < 0 or not self.check_validity(board):
+                raise IndexError
+            self.update_character(board, "left")
         except IndexError:
             self.x += 1
-            self.update_character(board)
+
+    
+    def check_validity(self, board):
+        if board.colormap[self.y][self.x] == "red":
+            return False
+        else:
+            return True
         
 
-    def update_character(self, board):
+    def update_character(self, board, dir):
         board.tilemap[self.y][self.x].configure(bg="black")
+
+        if dir == "up":
+            try:
+                board.tilemap[self.y+1][self.x].configure(bg=board.colormap[self.y+1][self.x])
+            except IndexError:
+                pass
+
+        elif dir == "down":
+            try:
+                board.tilemap[self.y-1][self.x].configure(bg=board.colormap[self.y-1][self.x])
+            except IndexError:
+                pass
+
+        elif dir == "right":
+            try:
+                board.tilemap[self.y][self.x-1].configure(bg=board.colormap[self.y][self.x-1])
+            except IndexError:
+                pass
+
+        elif dir == "left":
+            try:
+                board.tilemap[self.y][self.x+1].configure(bg=board.colormap[self.y][self.x+1])
+            except IndexError:
+                pass
+
         self.print_pos()
 
     def print_pos(self):
@@ -83,28 +111,31 @@ class GUI:
         self.parent = parent
         self.parent.title("Sokoban")
 
-        self.seed = [["10x10:"],
+        self.seed = [["10x10:1,6"],
                      ["rrrrrrrrrr"],
+                     ["rrrrrrrrrr"],
+                     ["rrrrrrrrrr"],
+                     ["rrrrrrrwrr"],
+                     ["rrrrrwwwwr"],
+                     ["rrrrrrrwrr"],
                      ["rwwwwwwwwr"],
-                     ["rwwwwwwwwr"],
-                     ["rwwwwwwwwr"],
-                     ["rrrrwwrrrr"],
-                     ["rwwwwwwwwr"],
-                     ["rwwrrrrwwr"],
-                     ["rwwwwwwwwr"],
-                     ["rrrwwwwrrr"],
-                     ["rrrrwwrrrr"]]
+                     ["rrrrrrrrrr"],
+                     ["rrrrrrrrrr"],
+                     ["rrrrrrrrrr"]]
 
         self.TILE_SIZE = 25
 
         self.WINDOW_WIDTH = int(str(self.seed[0])[2:4])
         self.WINDOW_HEIGHT = int(str(self.seed[0])[5:7])
         self.parent.geometry(f"{self.WINDOW_WIDTH*self.TILE_SIZE}x{self.WINDOW_HEIGHT*self.TILE_SIZE}+200+200")
+        self.parent.resizable(False, False)
 
         self.tilemap = []
+        self.colormap = []
 
         for i in range(self.WINDOW_HEIGHT):
             self.tilemap.append([])
+            self.colormap.append([])
             for j in range(self.WINDOW_WIDTH):
                 color = str(self.seed[i+1])[j+2]
                 if color == "r":
@@ -115,8 +146,9 @@ class GUI:
                 f = Frame(self.parent, bg=color, width=self.TILE_SIZE, height=self.TILE_SIZE)
                 f.grid(row=i, column=j)
                 self.tilemap[i].append(f)
+                self.colormap[i].append(color)
 
-        self.character = Character(5,1, self)
+        self.character = Character(int(str(self.seed[0])[8]),int(str(self.seed[0])[10]), self)
 
         self.parent.bind("<KeyRelease-w>", lambda i: self.character.move_up(self))
         self.parent.bind("<KeyRelease-s>", lambda i: self.character.move_down(self))
