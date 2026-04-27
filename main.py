@@ -79,19 +79,52 @@ class Character:
             except IndexError:
                 pass
 
-        self.print_pos()
+        # self.print_pos()
+        self.box.detect_player(self, board)
+
 
     def print_pos(self):
         print(f"{self.x},{self.y}")
 
 
 class Box:
-    def __init__(self, x, y):
+    def __init__(self, x, y, board, player):
         self.x = x
         self.y = y
+        player = player
+        board = board
+        board.tilemap[self.y][self.x].configure(bg="yellow")
 
-    def detect_player(self, player):
-        pass
+        self.surrounding_walls = 0
+        if board.colormap[self.y-1][self.x] == "red":
+            self.surrounding_walls += 1
+        if board.colormap[self.y+1][self.x] == "red":
+            self.surrounding_walls += 1
+        if board.colormap[self.y][self.x-1] == "red":
+            self.surrounding_walls += 1
+        if board.colormap[self.y][self.x+1] == "red":
+            self.surrounding_walls += 1
+
+    def player_visible(self, player, board):
+        directions = [(-1,0),(1,0),(0,1),(0,-1)]
+        for i in range(4):
+            for j in range(10):
+                if board.colormap[self.y+directions[i][0]*j][self.x+directions[i][1]*j] == "red":
+                    break
+                if self.y+((j+1)*(directions[i][0])) == player.y and self.x+((j+1)*directions[i][1]) == player.x:
+                    self.player_dir = i     # up:0 down:1 right:2 left:3
+                    print(self.player_dir)
+                    return True
+        return False
+                            
+            
+                
+    def detect_player(self, player, board):
+        if (player.x in range(self.x-2, self.x+3) and player.y in range(self.y-2, self.y+3)) and self.player_visible(player, board):
+            print("close")
+        else:
+            print("far")
+        # print(self.surrounding_walls)
 
     def move_up(self):
         pass
@@ -111,15 +144,15 @@ class GUI:
         self.parent = parent
         self.parent.title("Sokoban")
 
-        self.seed = [["10x10:1,6"],
+        self.seed = [["10x10:1,6:5,6"],
                      ["rrrrrrrrrr"],
                      ["rrrrrrrrrr"],
                      ["rrrrrrrrrr"],
                      ["rrrrrrrwrr"],
                      ["rrrrrwwwwr"],
-                     ["rrrrrrrwrr"],
-                     ["rwwwwwwwwr"],
-                     ["rrrrrrrrrr"],
+                     ["rwwwwwwwrr"],
+                     ["rwwwrwwwwr"],
+                     ["rrrwwwwwrr"],
                      ["rrrrrrrrrr"],
                      ["rrrrrrrrrr"]]
 
@@ -157,6 +190,8 @@ class GUI:
 
         self.tilemap[self.character.y][self.character.x].configure(bg="black")
 
+        self.box = Box(int(str(self.seed[0])[12]),int(str(self.seed[0])[14]), self, self.character)
+        self.character.box = self.box
                 
 
 
