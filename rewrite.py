@@ -7,6 +7,9 @@ class Board:
         self.seed = seed
         self.GUI = GUI
 
+        # Establishes a tilemap (2D list) of individual colored Frames
+        # Establishes a colormap (2D list) of the colors of their respective Frame
+
         self.tilemap = []
         self.colormap = []
 
@@ -23,12 +26,14 @@ class Board:
                 self.tilemap[i].append(tile)
                 self.colormap[i].append(color)
 
+        # Establishes a pathmap (2D list) of the possible lengths in each direction and whether they are perceived as an obvious dead end from each grid square
+
         self.pathmap = []
 
         for i in range(self.GUI.WINDOW_HEIGHT//self.game.TILE_SIZE):
             self.pathmap.append([])
             for j in range(self.GUI.WINDOW_WIDTH//self.game.TILE_SIZE):
-                self.pathmap[i].append({"up":0, "down":0, "left": 0, "right":0})
+                self.pathmap[i].append({"up":0, "up_dead_end":True, "down":0, "down_dead_end":True, "left": 0, "left_dead_end":True, "right":0, "right_dead_end":True})
                 if self.colormap[i][j] == "red":
                     pass
                 else:
@@ -37,24 +42,32 @@ class Board:
                             break
                         else:
                             self.pathmap[i][j]["up"] += 1
+                            if self.colormap[k][j-1] != "red" or self.colormap[k][j+1] != "red":
+                                self.pathmap[i][j]["up_dead_end"] = False
 
                     for k in range(i+1,10,1):
                         if self.colormap[k][j] == "red":
                             break
                         else:
                             self.pathmap[i][j]["down"] += 1
+                            if self.colormap[k][j-1] != "red" or self.colormap[k][j+1] != "red":
+                                self.pathmap[i][j]["down_dead_end"] = False
 
                     for k in range(j-1,-1,-1):
                         if self.colormap[i][k] == "red":
                             break
                         else:
                             self.pathmap[i][j]["left"] += 1
+                            if self.colormap[i-1][k] != "red" or self.colormap[i+1][k] != "red":
+                                self.pathmap[i][j]["left_dead_end"] = False
 
                     for k in range(j+1,10,1):
                         if self.colormap[i][k] == "red":
                             break
                         else:
                             self.pathmap[i][j]["right"] += 1
+                            if self.colormap[i-1][k] != "red" or self.colormap[i+1][k] != "red":
+                                self.pathmap[i][j]["right_dead_end"] = False
 
         character_x = int(self.seed[self.GUI.WINDOW_HEIGHT//self.game.TILE_SIZE][2])
         character_y = int(self.seed[self.GUI.WINDOW_HEIGHT//self.game.TILE_SIZE][4])
