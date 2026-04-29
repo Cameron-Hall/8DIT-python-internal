@@ -34,40 +34,8 @@ class Board:
             self.pathmap.append([])
             for j in range(self.GUI.WINDOW_WIDTH//self.game.TILE_SIZE):
                 self.pathmap[i].append({"up":0, "up_dead_end":True, "down":0, "down_dead_end":True, "left": 0, "left_dead_end":True, "right":0, "right_dead_end":True})
-                if self.colormap[i][j] == "red":
-                    pass
-                else:
-                    for k in range(i-1,-1,-1):
-                        if self.colormap[k][j] == "red":
-                            break
-                        else:
-                            self.pathmap[i][j]["up"] += 1
-                            if self.colormap[k][j-1] != "red" or self.colormap[k][j+1] != "red":
-                                self.pathmap[i][j]["up_dead_end"] = False
+                self.pathmap_update(i, j)
 
-                    for k in range(i+1,10,1):
-                        if self.colormap[k][j] == "red":
-                            break
-                        else:
-                            self.pathmap[i][j]["down"] += 1
-                            if self.colormap[k][j-1] != "red" or self.colormap[k][j+1] != "red":
-                                self.pathmap[i][j]["down_dead_end"] = False
-
-                    for k in range(j-1,-1,-1):
-                        if self.colormap[i][k] == "red":
-                            break
-                        else:
-                            self.pathmap[i][j]["left"] += 1
-                            if self.colormap[i-1][k] != "red" or self.colormap[i+1][k] != "red":
-                                self.pathmap[i][j]["left_dead_end"] = False
-
-                    for k in range(j+1,10,1):
-                        if self.colormap[i][k] == "red":
-                            break
-                        else:
-                            self.pathmap[i][j]["right"] += 1
-                            if self.colormap[i-1][k] != "red" or self.colormap[i+1][k] != "red":
-                                self.pathmap[i][j]["right_dead_end"] = False
 
         character_x = int(self.seed[self.GUI.WINDOW_HEIGHT//self.game.TILE_SIZE][2])
         character_y = int(self.seed[self.GUI.WINDOW_HEIGHT//self.game.TILE_SIZE][4])
@@ -81,10 +49,49 @@ class Board:
 
         self.tilemap[self.character.y][self.character.x].configure(bg="black")
 
-        box_x = self.seed[self.GUI.WINDOW_HEIGHT//self.game.TILE_SIZE][6]
-        box_y = self.seed[self.GUI.WINDOW_HEIGHT//self.game.TILE_SIZE][8]
+        box_x = int(self.seed[self.GUI.WINDOW_HEIGHT//self.game.TILE_SIZE][6])
+        box_y = int(self.seed[self.GUI.WINDOW_HEIGHT//self.game.TILE_SIZE][8])
 
         self.box = Box(box_x, box_y, self, self.character)
+
+        self.tilemap[self.box.y][self.box.x].configure(bg="yellow")
+
+    def pathmap_update(self, i, j):
+        self.pathmap[i][j] = ({"up":0, "up_dead_end":True, "down":0, "down_dead_end":True, "left": 0, "left_dead_end":True, "right":0, "right_dead_end":True})
+        if self.colormap[i][j] == "red":
+            pass
+        else:
+            for k in range(i-1,-1,-1):
+                if self.colormap[k][j] == "white":
+                    self.pathmap[i][j]["up"] += 1
+                    if self.colormap[k][j-1] == "white" or self.colormap[k][j+1] == "white":
+                        self.pathmap[i][j]["up_dead_end"] = False
+                else:
+                    break
+                    
+            for k in range(i+1,10,1):
+                if self.colormap[k][j] == "white":
+                    self.pathmap[i][j]["down"] += 1
+                    if self.colormap[k][j-1] == "white" or self.colormap[k][j+1] == "white":
+                        self.pathmap[i][j]["down_dead_end"] = False
+                else:
+                    break
+                    
+            for k in range(j-1,-1,-1):
+                if self.colormap[i][k] == "white":
+                    self.pathmap[i][j]["left"] += 1
+                    if self.colormap[i-1][k] == "white" or self.colormap[i+1][k] == "white":
+                        self.pathmap[i][j]["left_dead_end"] = False
+                else:
+                    break                    
+
+            for k in range(j+1,10,1):
+                if self.colormap[i][k] == "white":
+                    self.pathmap[i][j]["right"] += 1
+                    if self.colormap[i-1][k] == "white" or self.colormap[i+1][k] == "white":
+                        self.pathmap[i][j]["right_dead_end"] = False
+                else:
+                    break
 
 
 class Box:
@@ -94,40 +101,110 @@ class Box:
         self.board = board
         self.character = character
 
+        self.color = "yellow"
+        self.movement = Movement(self, self.board)
+
     def initiate_movement(self):
-        if self.detect_player(self.board):
-            self.move_box(self.board) 
+        self.cycles += 1
+        if self.detect_player() and self.cycles < 10:
+            self.move_box() 
 
     def detect_player(self):
-        if (self.player.x in range(self.x-2, self.x+3) and self.player.y in range(self.y-2, self.y+3)) and self.player_visible(self.board) in range(4):
+        if (self.character.x in range(self.x-2, self.x+3) and self.character.y in range(self.y-2, self.y+3)) and self.player_visible() in range(4): 
+            if self.character.x == self.x and self.character.y == self.y:
+                return False
             return True
         
     def player_visible(self):
-        pass
+        if self.character.y in range(self.y, self.y - self.board.pathmap[self.y][self.x]["up"]-1, -1) and self.character.x == self.x:
+            return 0
+        elif self.character.y in range(self.y, self.y + self.board.pathmap[self.y][self.x]["down"]+1, 1) and self.character.x == self.x:
+            return 1
+        elif self.character.x in range(self.x, self.x + self.board.pathmap[self.y][self.x]["right"]+1, 1) and self.character.y == self.y:
+            return 2
+        elif self.character.x in range(self.x, self.x - self.board.pathmap[self.y][self.x]["left"]-1, -1) and self.character.y == self.y:
+            return 3
+        else: 
+            return 4
 
     def move_box(self):
-        pass
+        if self.player_visible() == 1:
+            if self.check_end("up_dead_end"):
+                if self.check_end("left_dead_end"):
+                    if self.check_end("right_dead_end"):
+                        maximum = max(self.check_end("up"), self.check_end("left"), self.check_end("right"))
+                        if maximum == self.check_end("up"):
+                            self.move_up()
+                        elif maximum == self.check_end("left"):
+                            self.move_left()
+                        elif maximum == self.check_end("right"):
+                            self.move_right()                    
+                    else:
+                        self.move_right()
+                else:
+                    self.move_left()
+            else:
+                self.move_up()
+        
+        elif self.player_visible() == 0:
+            if self.check_end("down_dead_end"):
+                if self.check_end("right_dead_end"):
+                    if self.check_end("left_dead_end"):
+                        maximum = max(self.check_end("down"), self.check_end("right"), self.check_end("left"))
+                        if maximum == self.check_end("down"):
+                            self.move_down()
+                        elif maximum == self.check_end("right"):
+                            self.move_right()
+                        elif maximum == self.check_end("left"):
+                            self.move_left()                    
+                    else:
+                        self.move_left()
+                else:
+                    self.move_right()
+            else:
+                self.move_down()
 
-    def move_up(self):
-        pass
+        elif self.player_visible() == 3:
+            if self.check_end("right_dead_end"):
+                if self.check_end("up_dead_end"):
+                    if self.check_end("down_dead_end"):
+                        maximum = max(self.check_end("right"), self.check_end("up"), self.check_end("down"))
+                        if maximum == self.check_end("right"):
+                            self.move_right()
+                        elif maximum == self.check_end("up"):
+                            self.move_up()
+                        elif maximum == self.check_end("down"):
+                            self.move_down()                    
+                    else:
+                        self.move_down()
+                else:
+                    self.move_up()
+            else:
+                self.move_right()
+        
+        elif self.player_visible() == 2:
+            if self.check_end("left_dead_end"):
+                if self.check_end("down_dead_end"):
+                    if self.check_end("up_dead_end"):
+                        maximum = max(self.check_end("left"), self.check_end("down"), self.check_end("up"))
+                        if maximum == self.check_end("left"):
+                            self.move_left()
+                        elif maximum == self.check_end("down"):
+                            self.move_down()
+                        elif maximum == self.check_end("up"):
+                            self.move_up()                    
+                    else:
+                        self.move_up()
+                else:
+                    self.move_down()
+            else:
+                self.move_left()
 
-    def move_down(self):
-        pass
+        self.initiate_movement()
+                    
 
-    def move_right(self):
-        pass
-
-    def move_left(self):
-        pass
-
-
-class Character:
-    def __init__(self, x, y, board):
-        self.x = x
-        self.y = y
-        self.board = board
-        self.color = "black"
-        self.movement = Movement(self, self.board)
+    def check_end(self, dir):
+        return self.board.pathmap[self.y][self.x][dir]
 
     def move_up(self):
         self.movement.move_up()
@@ -141,21 +218,50 @@ class Character:
     def move_left(self):
         self.movement.move_left()
 
+
+class Character:
+    def __init__(self, x, y, board):
+        self.x = x
+        self.y = y
+        self.board = board
+        self.color = "black"
+        self.movement = Movement(self, self.board)
+
+    def move_up(self):
+        self.movement.move_up()
+        self.board.box.cycles = 0
+        self.board.box.initiate_movement()
+
+    def move_down(self):
+        self.movement.move_down()
+        self.board.box.cycles = 0
+        self.board.box.initiate_movement()
+
+    def move_right(self):
+        self.movement.move_right()
+        self.board.box.cycles = 0
+        self.board.box.initiate_movement()
+
+    def move_left(self):
+        self.movement.move_left()
+        self.board.box.cycles = 0
+        self.board.box.initiate_movement()
+
     
 class Game:
     def __init__(self, parent):
         self.parent = parent
 
-        self.seeds = [["rwrrrrrrrr",
-                       "rwwwwwwrrr",
-                       "rwrrwwwwrr",
-                       "rwwrwrrwrr",
-                       "rrrrrrrwrr",
-                       "rrwwwwwwrr",
-                       "rrwwwwwwrr",
-                       "rrwrrrrwrr",
+        self.seeds = [["rrrrrrrrrr",
+                       "rrrwwwwrrr",
+                       "rrwwwwrrrr",
+                       "rrwrrwrwrr",
+                       "rrwrrwwwwr",
                        "rwwwwwwwwr",
-                       "rrrwrrwrrr", "1:1,8:4,8"]]
+                       "rwwwwrrwwr",
+                       "rrrwrwwrwr",
+                       "rwwwrwwwwr",
+                       "rrrrrrrrrr", "1:8,4:5,8"]]
         
         self.levels = []
 
@@ -260,8 +366,6 @@ class Movement:
                 self.board.tilemap[self.item.y][self.item.x+1].configure(bg=self.board.colormap[self.item.y][self.item.x+1])
             except IndexError:
                 pass
-
-        print(self.board.pathmap[self.item.y][self.item.x])
 
 
 if __name__ == "__main__":
