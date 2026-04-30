@@ -13,7 +13,7 @@ class Board:
         self.tilemap = []
         self.colormap = []
 
-        for i in range(self.GUI.WINDOW_HEIGHT//self.game.TILE_SIZE):
+        for i in range((self.GUI.WINDOW_HEIGHT-20)//self.game.TILE_SIZE):
             self.tilemap.append([])
             self.colormap.append([])
 
@@ -21,7 +21,7 @@ class Board:
                 color = self.seed[i][j]
                 color = self.game.colors[color]
 
-                tile = Frame(self.game.levels[int(self.seed[self.GUI.WINDOW_HEIGHT//self.game.TILE_SIZE][0])-1], width=self.game.TILE_SIZE, height=self.game.TILE_SIZE, bg=color)
+                tile = Frame(self.game.levels[int(self.seed[(self.GUI.WINDOW_HEIGHT-20)//self.game.TILE_SIZE][0])-1], width=self.game.TILE_SIZE, height=self.game.TILE_SIZE, bg=color)
                 tile.grid(row=i, column=j)
                 self.tilemap[i].append(tile)
                 self.colormap[i].append(color)
@@ -30,27 +30,22 @@ class Board:
 
         self.pathmap = []
 
-        for i in range(self.GUI.WINDOW_HEIGHT//self.game.TILE_SIZE):
+        for i in range((self.GUI.WINDOW_HEIGHT-20)//self.game.TILE_SIZE):
             self.pathmap.append([])
             for j in range(self.GUI.WINDOW_WIDTH//self.game.TILE_SIZE):
                 self.pathmap[i].append({"up":0, "up_dead_end":True, "down":0, "down_dead_end":True, "left": 0, "left_dead_end":True, "right":0, "right_dead_end":True})
                 self.pathmap_update(i, j)
 
 
-        character_x = int(self.seed[self.GUI.WINDOW_HEIGHT//self.game.TILE_SIZE][2])
-        character_y = int(self.seed[self.GUI.WINDOW_HEIGHT//self.game.TILE_SIZE][4])
+        character_x = int(self.seed[(self.GUI.WINDOW_HEIGHT-20)//self.game.TILE_SIZE][2])
+        character_y = int(self.seed[(self.GUI.WINDOW_HEIGHT-20)//self.game.TILE_SIZE][4])
 
         self.character = Character(character_x, character_y, self)
 
-        self.GUI.parent.bind("<KeyRelease-w>", lambda i: self.character.move_up())
-        self.GUI.parent.bind("<KeyRelease-s>", lambda i: self.character.move_down())
-        self.GUI.parent.bind("<KeyRelease-d>", lambda i: self.character.move_right())
-        self.GUI.parent.bind("<KeyRelease-a>", lambda i: self.character.move_left())
-
         self.tilemap[self.character.y][self.character.x].configure(bg="black")
 
-        box_x = int(self.seed[self.GUI.WINDOW_HEIGHT//self.game.TILE_SIZE][6])
-        box_y = int(self.seed[self.GUI.WINDOW_HEIGHT//self.game.TILE_SIZE][8])
+        box_x = int(self.seed[(self.GUI.WINDOW_HEIGHT-20)//self.game.TILE_SIZE][6])
+        box_y = int(self.seed[(self.GUI.WINDOW_HEIGHT-20)//self.game.TILE_SIZE][8])
 
         self.box = Box(box_x, box_y, self, self.character)
 
@@ -69,7 +64,7 @@ class Board:
                 else:
                     break
                     
-            for k in range(i+1,10,1):
+            for k in range(i+1,15,1):
                 if self.colormap[k][j] == "white":
                     self.pathmap[i][j]["down"] += 1
                     if self.colormap[k][j-1] == "white" or self.colormap[k][j+1] == "white":
@@ -85,7 +80,7 @@ class Board:
                 else:
                     break                    
 
-            for k in range(j+1,10,1):
+            for k in range(j+1,15,1):
                 if self.colormap[i][k] == "white":
                     self.pathmap[i][j]["right"] += 1
                     if self.colormap[i-1][k] == "white" or self.colormap[i+1][k] == "white":
@@ -252,40 +247,87 @@ class Game:
     def __init__(self, parent):
         self.parent = parent
 
-        self.seeds = [["rrrrrrrrrr",
-                       "rrrwwwwrrr",
-                       "rrwwwwrrrr",
-                       "rrwrrwrwrr",
-                       "rrwrrwwwwr",
-                       "rwwwwwwwwr",
-                       "rwwwwrrwwr",
-                       "rrrwrwwrwr",
-                       "rwwwrwwwwr",
-                       "rrrrrrrrrr", "1:8,4:5,8"]]
+        self.seeds = [["rrrrrrrrrrrrrrr",
+                       "rrrrrrrrrwrwrrr",
+                       "rrrrrrrwwwwwwrr",
+                       "rrrrrrrrrrrwrrr",
+                       "rrwwwwwwwwwwwrr",
+                       "rrrrwrrrrrrrrrr",
+                       "rrrrwrrrrrrrrrr",
+                       "rrrrrrrrrrrrrrr",
+                       "rrrrrrrrrrrrrrr","1:2,4:7,4"],
+                       
+                      ["rrrrrrrrrrrrrrr",
+                       "rrrrrrrrrrrrrrr",
+                       "rrrrwrrrwwwwwrr",
+                       "rwwrwrrrwrwrwrr",
+                       "rwwwwwwwwwwwwrr",
+                       "rwwrwrrrrrwrrrr",
+                       "rrrrwrrrrwwwrrr",
+                       "rrrrrrrrrrwrrrr",
+                       "rrrrrrrrrrrrrrr","2:4,6:2,4"],
+                       
+                      ["rrrrrrrrrrrrrrr",
+                       "rrrrrrrrrrrrrwr",
+                       "rrrrwrrrwwwwwwr",
+                       "rrrrwrrrwrrwrrr",
+                       "rrrrwwwwwwrwrrr",
+                       "rrrrrrrrwrrwwwr",
+                       "rrrrrrrrwwwwrrr",
+                       "rrrrrrrrrrrrrrr",
+                       "rrrrrrrrrrrrrrr","3:4,2:7,4"]]
         
         self.levels = []
 
-        self.colors = {"w": "white", "b": "black", "r": "red", "g": "green", "y": "yellow"}
+        self.colors = {"w": "white", "b": "blue", "r": "red", "g": "green", "y": "yellow"}
 
         self.TILE_SIZE = 50
 
         self.levels = []
 
-        for seed in self.seeds:
-            self.levels.append(Frame(self.parent.parent))
+        self.curr_level = 0
 
-        self.levels[0].pack()
-        
         for seed in self.seeds:
-            b = Board(seed, self, self.parent)
+            self.levels.append(Frame(self.parent.mainframe))
+
+        self.toolbar = Toolbar(self.parent.toolbar_frame, self, self.parent)
+
+
+
+
+        self.establish_board()
+
+        
+    def establish_board(self): 
+        print(self.curr_level)
+        print(self.seeds[self.curr_level])
+        print(self.levels[self.curr_level])
+        self.levels[self.curr_level].grid(row=1, column=0, columnspan=3)
+        self.b = Board(self.seeds[self.curr_level], self, self.parent)
+
+        self.toolbar.level_number.configure(text=self.curr_level)
+
+        self.parent.parent.bind("<KeyRelease-w>", lambda i: self.b.character.move_up())
+        self.parent.parent.bind("<KeyRelease-s>", lambda i: self.b.character.move_down())
+        self.parent.parent.bind("<KeyRelease-d>", lambda i: self.b.character.move_right())
+        self.parent.parent.bind("<KeyRelease-a>", lambda i: self.b.character.move_left())
+
+
 
 
 class GUI:
     def __init__(self, parent):
         self.parent = parent
         
-        self.WINDOW_WIDTH = 500
-        self.WINDOW_HEIGHT = 500
+        self.WINDOW_WIDTH = 750
+        self.WINDOW_HEIGHT = 470
+
+        self.mainframe = Frame(parent)
+
+        self.toolbar_frame = Frame(self.mainframe, height = 30)
+        self.toolbar_frame.grid(row=0, column=0)
+
+        self.mainframe.pack()
 
         self.game = Game(self)
 
@@ -366,6 +408,38 @@ class Movement:
                 self.board.tilemap[self.item.y][self.item.x+1].configure(bg=self.board.colormap[self.item.y][self.item.x+1])
             except IndexError:
                 pass
+
+
+class Toolbar:
+    def __init__(self, frame, parent, GUI):
+        self.frame = frame
+        self.parent = parent
+        self.GUI = GUI
+
+        self.prev_level_button = Button(self.frame, width=10, text="< Previous", command=self.prev_level)
+        self.prev_level_button.grid(row=0, column=0, padx=20)
+
+        self.level_number = Label(self.frame, text=f"{self.parent.curr_level+1}")
+        self.level_number.grid(row=0, column=1)
+
+        self.next_level_button = Button(self.frame, width=10, text="Next >", command=self.next_level)
+        self.next_level_button.grid(row=0, column=2, padx=20)
+
+    def prev_level(self):
+        self.parent.levels[self.parent.curr_level].grid_forget()
+        self.parent.curr_level -= 1
+        self.parent.establish_board()
+
+    def next_level(self):
+        self.parent.levels[self.parent.curr_level].grid_forget()
+        self.parent.curr_level += 1
+        self.parent.establish_board()
+
+
+
+
+
+
 
 
 if __name__ == "__main__":
