@@ -49,10 +49,10 @@ class Board:
 
         self.box = Box(box_x, box_y, self, self.character)
 
-        self.tilemap[self.box.y][self.box.x].configure(bg="yellow")
+        self.tilemap[self.box.y][self.box.x].configure(bg="green")
 
     def pathmap_update(self, i, j):
-        self.pathmap[i][j] = ({"up":0, "up_dead_end":True, "down":0, "down_dead_end":True, "left": 0, "left_dead_end":True, "right":0, "right_dead_end":True})
+        self.pathmap[i][j] = ({"up":0, "up_dead_end":True, "down":0, "down_dead_end":True, "left": 0, "left_dead_end":True, "right":0, "right_dead_end":True, "tunnel":False})
         if self.colormap[i][j] == "red":
             pass
         else:
@@ -88,6 +88,9 @@ class Board:
                 else:
                     break
 
+            if (self.colormap[i+1][j] != "white" and self.colormap[i-1][j] != "white") or (self.colormap[i][j+1] != "white" and self.colormap[i][j-1] != "white"):
+                self.pathmap[i][j]["tunnel"] = True
+
 
 class Box:
     def __init__(self, x, y, board, character):
@@ -95,15 +98,18 @@ class Box:
         self.y = y
         self.board = board
         self.character = character
-
-        self.color = "yellow"
+        self.move = 0
+        self.color = "green"
         self.movement = Movement(self, self.board)
 
-    def initiate_movement(self):
+    def initiate_movement(self, dir):
+        self.dir = dir
+        self.move += 1
+        print(f"Move {self.move}: {self.dir}")
         self.cycles += 1
-        if self.detect_player() and self.cycles < 10:
+        if (self.detect_player() or self.board.pathmap[self.y][self.x]["tunnel"]) and self.cycles < 10:
             self.move_box() 
-
+        
     def detect_player(self):
         if (self.character.x in range(self.x-2, self.x+3) and self.character.y in range(self.y-2, self.y+3)) and self.player_visible() in range(4): 
             if self.character.x == self.x and self.character.y == self.y:
@@ -111,19 +117,19 @@ class Box:
             return True
         
     def player_visible(self):
-        if self.character.y in range(self.y, self.y - self.board.pathmap[self.y][self.x]["up"]-1, -1) and self.character.x == self.x:
+        if self.character.y in range(self.y-1, self.y - self.board.pathmap[self.y][self.x]["up"]-1, -1) and self.character.x == self.x:
             return 0
-        elif self.character.y in range(self.y, self.y + self.board.pathmap[self.y][self.x]["down"]+1, 1) and self.character.x == self.x:
+        elif self.character.y in range(self.y+1, self.y + self.board.pathmap[self.y][self.x]["down"]+1, 1) and self.character.x == self.x:
             return 1
-        elif self.character.x in range(self.x, self.x + self.board.pathmap[self.y][self.x]["right"]+1, 1) and self.character.y == self.y:
+        elif self.character.x in range(self.x+1, self.x + self.board.pathmap[self.y][self.x]["right"]+1, 1) and self.character.y == self.y:
             return 2
-        elif self.character.x in range(self.x, self.x - self.board.pathmap[self.y][self.x]["left"]-1, -1) and self.character.y == self.y:
+        elif self.character.x in range(self.x-1, self.x - self.board.pathmap[self.y][self.x]["left"]-1, -1) and self.character.y == self.y:
             return 3
         else: 
             return 4
 
     def move_box(self):
-        if self.player_visible() == 1:
+        if (self.player_visible() == 1 and self.cycles == 1) or self.dir == "up":
             if self.check_end("up_dead_end"):
                 if self.check_end("left_dead_end"):
                     if self.check_end("right_dead_end"):
@@ -141,7 +147,7 @@ class Box:
             else:
                 self.move_up()
         
-        elif self.player_visible() == 0:
+        elif (self.player_visible() == 0 and self.cycles == 1) or self.dir == "down":
             if self.check_end("down_dead_end"):
                 if self.check_end("right_dead_end"):
                     if self.check_end("left_dead_end"):
@@ -159,7 +165,7 @@ class Box:
             else:
                 self.move_down()
 
-        elif self.player_visible() == 3:
+        elif (self.player_visible() == 3 and self.cycles == 1) or self.dir == "right":
             if self.check_end("right_dead_end"):
                 if self.check_end("up_dead_end"):
                     if self.check_end("down_dead_end"):
@@ -177,7 +183,7 @@ class Box:
             else:
                 self.move_right()
         
-        elif self.player_visible() == 2:
+        elif (self.player_visible() == 2 and self.cycles == 1) or self.dir == "left":
             if self.check_end("left_dead_end"):
                 if self.check_end("down_dead_end"):
                     if self.check_end("up_dead_end"):
@@ -195,7 +201,7 @@ class Box:
             else:
                 self.move_left()
 
-        self.initiate_movement()
+        self.initiate_movement(self.dir)
                     
 
     def check_end(self, dir):
@@ -203,15 +209,19 @@ class Box:
 
     def move_up(self):
         self.movement.move_up()
+        self.dir = "up"
 
     def move_down(self):
         self.movement.move_down()
+        self.dir = "down"
 
     def move_right(self):
         self.movement.move_right()
+        self.dir = "right"
 
     def move_left(self):
         self.movement.move_left()
+        self.dir = "left"
 
 
 class Character:
@@ -225,22 +235,22 @@ class Character:
     def move_up(self):
         self.movement.move_up()
         self.board.box.cycles = 0
-        self.board.box.initiate_movement()
+        self.board.box.initiate_movement(None)
 
     def move_down(self):
         self.movement.move_down()
         self.board.box.cycles = 0
-        self.board.box.initiate_movement()
+        self.board.box.initiate_movement(None)
 
     def move_right(self):
         self.movement.move_right()
         self.board.box.cycles = 0
-        self.board.box.initiate_movement()
+        self.board.box.initiate_movement(None)
 
     def move_left(self):
         self.movement.move_left()
         self.board.box.cycles = 0
-        self.board.box.initiate_movement()
+        self.board.box.initiate_movement(None)
 
     
 class Game:
@@ -252,8 +262,8 @@ class Game:
                        "rrrrrrrwwwwwwrr",
                        "rrrrrrrrrrrwrrr",
                        "rrwwwwwwwwwwwrr",
-                       "rrrrwrrrrrrrrrr",
-                       "rrrrwrrrrrrrrrr",
+                       "rrrrwrrwrrrrrrr",
+                       "rrrrwrrwrrrrrrr",
                        "rrrrrrrrrrrrrrr",
                        "rrrrrrrrrrrrrrr","1:2,4:7,4"],
                        
@@ -299,9 +309,6 @@ class Game:
 
         
     def establish_board(self): 
-        print(self.curr_level)
-        print(self.seeds[self.curr_level])
-        print(self.levels[self.curr_level])
         self.levels[self.curr_level].grid(row=1, column=0, columnspan=3)
         self.b = Board(self.seeds[self.curr_level], self, self.parent)
 
