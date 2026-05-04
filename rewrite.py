@@ -3,13 +3,12 @@ from tkinter import messagebox
 
 
 class Board:
-
-    def __init__(self, seed, game, GUI, level_source):
-        """Creates a game board, with each element placed as per the seed"""
-
+    """Class for creating a game board and the character and box upon it."""
+    def __init__(self, seed, game, gui, level_source):
+        """Create a game board, with each element placed as per the seed."""
         self.game = game
         self.seed = seed
-        self.GUI = GUI
+        self.gui = gui
         self.level_source = level_source
 
         # Establishes a tilemap (2D list) of individual colored Frames
@@ -18,15 +17,15 @@ class Board:
         self.tilemap = []
         self.colormap = []
 
-        for i in range((self.GUI.WINDOW_HEIGHT-20)//self.game.TILE_SIZE):
+        for i in range((self.gui.WINDOW_HEIGHT-20)//self.game.TILE_SIZE):
             self.tilemap.append([])
             self.colormap.append([])
 
-            for j in range(self.GUI.WINDOW_WIDTH//self.game.TILE_SIZE):
+            for j in range(self.gui.WINDOW_WIDTH//self.game.TILE_SIZE):
                 color = self.seed[i][j]
                 color = self.game.colors[color]
 
-                tile = Frame(self.game.levels[int(self.seed[(self.GUI.WINDOW_HEIGHT-20)//self.game.TILE_SIZE][0:2])-1], width=self.game.TILE_SIZE, height=self.game.TILE_SIZE, bg=color)
+                tile = Frame(self.game.levels[int(self.seed[(self.gui.WINDOW_HEIGHT-20)//self.game.TILE_SIZE][0:2])-1], width=self.game.TILE_SIZE, height=self.game.TILE_SIZE, bg=color)
                 tile.grid(row=i, column=j)
                 self.tilemap[i].append(tile)
                 self.colormap[i].append(color)
@@ -35,41 +34,39 @@ class Board:
 
         self.pathmap = []
 
-        for i in range((self.GUI.WINDOW_HEIGHT-20)//self.game.TILE_SIZE):
+        for i in range((self.gui.WINDOW_HEIGHT-20)//self.game.TILE_SIZE):
             self.pathmap.append([])
-            for j in range(self.GUI.WINDOW_WIDTH//self.game.TILE_SIZE):
-                self.pathmap[i].append({"up":0, "up_dead_end":True, "down":0, "down_dead_end":True, "left": 0, "left_dead_end":True, "right":0, "right_dead_end":True})
+            for j in range(self.gui.WINDOW_WIDTH//self.game.TILE_SIZE):
+                self.pathmap[i].append({"up" : 0, "up_dead_end" : True, "down" : 0, "down_dead_end" : True, "left" : 0, "left_dead_end" : True, "right" : 0, "right_dead_end" : True})
                 self.pathmap_update(i, j)
 
         # Character starting location may change based on where it comes from - if the character comes from the below level they will have a different starting point
 
         if self.level_source == "prev":
-            character_x = int(self.seed[(self.GUI.WINDOW_HEIGHT-20)//self.game.TILE_SIZE][11])
-            character_y = int(self.seed[(self.GUI.WINDOW_HEIGHT-20)//self.game.TILE_SIZE][13])
+            character_x = int(self.seed[(self.gui.WINDOW_HEIGHT-20)//self.game.TILE_SIZE][11])
+            character_y = int(self.seed[(self.gui.WINDOW_HEIGHT-20)//self.game.TILE_SIZE][13])
         else:
-            character_x = int(self.seed[(self.GUI.WINDOW_HEIGHT-20)//self.game.TILE_SIZE][3])
-            character_y = int(self.seed[(self.GUI.WINDOW_HEIGHT-20)//self.game.TILE_SIZE][5])
+            character_x = int(self.seed[(self.gui.WINDOW_HEIGHT-20)//self.game.TILE_SIZE][3])
+            character_y = int(self.seed[(self.gui.WINDOW_HEIGHT-20)//self.game.TILE_SIZE][5])
 
         self.character = Character(character_x, character_y, self)
 
         self.tilemap[self.character.y][self.character.x].configure(bg="black")
 
-        box_x = int(self.seed[(self.GUI.WINDOW_HEIGHT-20)//self.game.TILE_SIZE][7])
-        box_y = int(self.seed[(self.GUI.WINDOW_HEIGHT-20)//self.game.TILE_SIZE][9])
+        box_x = int(self.seed[(self.gui.WINDOW_HEIGHT-20)//self.game.TILE_SIZE][7])
+        box_y = int(self.seed[(self.gui.WINDOW_HEIGHT-20)//self.game.TILE_SIZE][9])
 
         self.box = Box(box_x, box_y, self, self.character)
 
         self.tilemap[self.box.y][self.box.x].configure(bg="green")
 
-
     def pathmap_update(self, i, j):
         """Establishes the pathmap information for each tile"""
-
         self.pathmap[i][j] = ({"up":0, "up_dead_end":True, "down":0, "down_dead_end":True, "left": 0, "left_dead_end":True, "right":0, "right_dead_end":True, "tunnel":False})
         if self.colormap[i][j] == "red":
             pass
         else:
-            for k in range(i-1,-1,-1):
+            for k in range(i-1, -1, -1):
                 if self.colormap[k][j] in ["white", "yellow"]:
                     self.pathmap[i][j]["up"] += 1
                     if self.colormap[k][j-1] in ["white", "yellow"] or self.colormap[k][j+1] in ["white", "yellow"]:
@@ -77,7 +74,7 @@ class Board:
                 else:
                     break
                     
-            for k in range(i+1,15,1):
+            for k in range(i+1, 15, 1):
                 if self.colormap[k][j] in ["white", "yellow"]:
                     self.pathmap[i][j]["down"] += 1
                     if self.colormap[k][j-1] in ["white", "yellow"] or self.colormap[k][j+1] in ["white", "yellow"]:
@@ -85,7 +82,7 @@ class Board:
                 else:
                     break
                     
-            for k in range(j-1,-1,-1):
+            for k in range(j-1, -1, -1):
                 if self.colormap[i][k] in ["white", "yellow"]:
                     self.pathmap[i][j]["left"] += 1
                     if self.colormap[i-1][k] in ["white", "yellow"] or self.colormap[i+1][k] in ["white", "yellow"]:
@@ -93,7 +90,7 @@ class Board:
                 else:
                     break                    
 
-            for k in range(j+1,15,1):
+            for k in range(j+1, 15, 1):
                 if self.colormap[i][k] in ["white", "yellow"]:
                     self.pathmap[i][j]["right"] += 1
                     if self.colormap[i-1][k] in ["white", "yellow"] or self.colormap[i+1][k] in ["white", "yellow"]:
@@ -107,10 +104,9 @@ class Board:
 
 
 class Box:
-
+    """Create a box which responds to the character movement"""
     def __init__(self, x, y, board, character):
-        """Establishes the box class, with the color of the box"""
-
+        """Establish the box class, with the color of the box"""
         self.x = x
         self.y = y
         self.board = board
@@ -118,27 +114,23 @@ class Box:
         self.color = "green"
         self.movement = Movement(self, self.board)
 
-
     def initiate_movement(self, dir):
-        """Starts the box's movement, repeating as many times as necesssary"""
-
+        """Start the box's movement, repeating as many times as necesssary"""
         self.dir = dir
         self.cycles += 1
         if (self.detect_player() or self.board.pathmap[self.y][self.x]["tunnel"]) and self.cycles < 10:
             self.move_box() 
         
-
     def detect_player(self):
-        """Checks whether the player is close enough to initiate movement"""
+        """Check whether the player is close enough to initiate movement"""
 
         if (self.character.x in range(self.x-2, self.x+3) and self.character.y in range(self.y-2, self.y+3)) and self.player_visible() in range(4): 
             if self.character.x == self.x and self.character.y == self.y:
                 return False
             return True
 
-
     def player_visible(self):
-        """Checks the direction that the player is visible from, or if a wall blocks the detection"""
+        """Check the direction that the player is visible from, or if a wall blocks the detection"""
         if self.character.y in range(self.y-1, self.y - self.board.pathmap[self.y][self.x]["up"]-1, -1) and self.character.x == self.x:
             return 0
         elif self.character.y in range(self.y+1, self.y + self.board.pathmap[self.y][self.x]["down"]+1, 1) and self.character.x == self.x:
@@ -150,10 +142,8 @@ class Box:
         else: 
             return 4
 
-
     def move_box(self):
-        """Moves the box per strict rules. The movement is not random and is always predictable given the same circumstances"""
-
+        """Move the box per strict rules. The movement is not random and is always predictable given the same circumstances"""
         if (self.player_visible() == 1 and self.cycles == 1) or self.dir == "up":
             if self.check_end("up_dead_end"):
                 if self.check_end("left_dead_end"):
@@ -226,94 +216,73 @@ class Box:
             else:
                 self.move_left()
 
-        self.initiate_movement(self.dir)
-                    
+        self.initiate_movement(self.dir)             
 
     def check_end(self, dir):
-        """Checks against the pathmap whether it is a dead end or not"""
-
+        """Check against the pathmap whether it is a dead end or not"""
         return self.board.pathmap[self.y][self.x][dir]
 
-
     def move_up(self):
-        """Moves the box upwards one tile"""
-
+        """Move the box upwards one tile"""
         self.movement.move_up()
         self.dir = "up"
 
-
     def move_down(self):
-        """Moves the box downwards one tile"""
-
+        """Move the box downwards one tile"""
         self.movement.move_down()
         self.dir = "down"
 
-
     def move_right(self):
-        """Moves the box right one tile"""
-
+        """Move the box right one tile"""
         self.movement.move_right()
         self.dir = "right"
 
-
     def move_left(self):
-        """Moves the box left one tile"""
-
+        """Move the box left one tile"""
         self.movement.move_left()
         self.dir = "left"
 
 
-
 class Character:
-
+    """Create a character which can move around the board."""
     def __init__(self, x, y, board):
-        """Creates a character at the x and y positions given"""
+        """Create a character at the x and y positions given."""
         self.x = x
         self.y = y
         self.board = board
         self.color = "black"
         self.movement = Movement(self, self.board)
 
-
     def move_up(self):
-        """Moves the character up and starts the box movement"""
-
+        """Move the character up and starts the box movement"""
         self.movement.move_up()
         self.repeated_location_detection()
         self.board.box.cycles = 0
         self.board.box.initiate_movement(None)
 
-
     def move_down(self):
-        """Moves the character down and starts the box movement"""
-
+        """Move the character down and starts the box movement"""
         self.movement.move_down()
         self.repeated_location_detection()
         self.board.box.cycles = 0
         self.board.box.initiate_movement(None)
 
-
     def move_right(self):
-        """Moves the character right and starts the box movement"""
-
+        """Move the character right and starts the box movement"""
         self.movement.move_right()
         self.repeated_location_detection()
         self.board.box.cycles = 0
         self.board.box.initiate_movement(None)
 
-
     def move_left(self):
-        """Moves the character left and starts the box movement"""
-
+        """Move the character left and starts the box movement"""
         self.movement.move_left()
         self.repeated_location_detection()
         self.board.box.cycles = 0
         self.board.box.initiate_movement(None)
 
-
     def repeated_location_detection(self):
-        """Checks the players location on each turn"""
-
+        """Check the players location on each turn"""
         if self.board.colormap[self.y][self.x] == "blue":
             self.board.game.next_level()
         
@@ -321,20 +290,17 @@ class Character:
             self.board.game.boxes += 1
             self.board.game.toolbar.boxes_caught.configure(text=f"Boxes caught: {self.board.game.boxes}/{len(self.board.game.levels)}")
 
-
     def actuated_location_detection(self):
-        """Checks the players location at certain moments"""
-
+        """Check the players location at certain moments"""
         if self.board.colormap[self.y][self.x] == "yellow":
             self.board.game.prev_level()
 
 
     
 class Game:
-
+    """Class for the game, establishing of seeds and the changing of levels"""
     def __init__(self, parent):
         """Creates a game window for the board to sit in"""
-
         self.parent = parent
         self.boxes = 0
         self.TILE_SIZE = 50
@@ -449,10 +415,9 @@ class Game:
 
         self.establish_board(None)
 
-        
+
     def establish_board(self, source): 
         """Creates the correct board for the current level, detects keypresses and calls the respective functions"""
-
         self.levels[self.curr_level].grid(row=1, column=0, columnspan=3)
 
         self.b = Board(self.seeds[self.curr_level], self, self.parent, source)
@@ -466,18 +431,14 @@ class Game:
         self.parent.parent.bind("<KeyRelease-f>", lambda i: self.b.character.actuated_location_detection())
         self.parent.parent.bind("<Return>", lambda i: self.toolbar.confirm_level())
 
-
     def prev_level(self):
         """Initiates the previous level"""
-
         self.levels[self.curr_level].grid_forget()
         self.curr_level -= 1
         self.establish_board("prev")
 
-
     def next_level(self):
         """Initiates the next level"""
-
         self.levels[self.curr_level].grid_forget()
         self.curr_level += 1
         self.establish_board("next")
@@ -485,7 +446,7 @@ class Game:
 
 
 class GUI:
-    
+    """Basic GUI class"""
     def __init__(self, parent):
         """Creates the GUI for the Game class to sit in, establishes its size"""
         self.parent = parent
@@ -503,19 +464,15 @@ class GUI:
         self.parent.resizable(False, False)
 
 
-
 class Movement:
-    
+    """Movement to be applied to the Box and Character classes"""
     def __init__(self, item, board):
         """Establishes an item to be moved"""
-
         self.item = item
         self.board = board
 
-
     def move_up(self):
         """Moves the item upwards, only if it is valid"""
-
         self.item.y -= 1
         try:
             if self.item.y < 0 or not self.check_validity():
@@ -524,10 +481,8 @@ class Movement:
         except IndexError:
             self.item.y += 1
 
-
     def move_down(self):
         """Moves the item downwards, only if it is valid"""
-
         self.item.y += 1
         try:
             if self.item.y > self.board.GUI.WINDOW_HEIGHT or not self.check_validity():
@@ -536,10 +491,8 @@ class Movement:
         except IndexError:
             self.item.y -= 1
 
-
     def move_right(self):
         """Moves the item right, only if it is valid"""
-
         self.item.x += 1
         try:
             if self.item.x > self.board.GUI.WINDOW_WIDTH or not self.check_validity():
@@ -548,10 +501,8 @@ class Movement:
         except IndexError:
             self.item.x -= 1
 
-
     def move_left(self):
         """Moves the item left, only if it is valid"""
-
         self.item.x -= 1
         try:
             if self.item.x < 0 or not self.check_validity():
@@ -560,7 +511,6 @@ class Movement:
         except IndexError:
             self.item.x += 1
 
-
     def check_validity(self):
         """Checks whether the movement direction is valid"""
         if self.board.colormap[self.item.y][self.item.x] == "red":
@@ -568,10 +518,8 @@ class Movement:
         else:
             return True
         
-
     def update_character(self, dir):
         """Updates the characters position on the visual board, and replaces the tile behind them as per the colormap"""
-
         self.board.tilemap[self.item.y][self.item.x].configure(bg=self.item.color)
 
         if dir == "up":
@@ -599,12 +547,10 @@ class Movement:
                 pass
 
 
-
 class Toolbar:
-    
+    """Create a toolbar above the board"""
     def __init__(self, frame, parent, GUI):
-        """Creates the toolbar at the top of the game"""
-
+        """Create the toolbar at the top of the game"""
         self.frame = frame
         self.parent = parent
         self.GUI = GUI
@@ -613,26 +559,20 @@ class Toolbar:
         self.boxes_caught = Label(self.frame, text=f"Boxes caught: {self.parent.boxes}/{len(self.parent.levels)}")
         self.boxes_caught.grid(row=0, column=2)
 
-
     def set_button(self):
-        """Makes the level number into a button, also used for removing the entry widget once set"""
-
+        """Make the level number into a button, also used for removing the entry widget once set"""
         self.level_number = Button(self.frame, width=10, text=f"{self.parent.curr_level+1}", command=self.change_level)
         self.level_number.grid(row=0, column=1)
 
-
     def change_level(self):
-        """Changes the level per the entry in the entry widget"""
-
+        """Change the level per the entry in the entry widget"""
         self.v = StringVar()
         self.level_number = Entry(self.frame, width=10, textvariable=self.v)
         self.level_number.grid(row=0, column=1)
         self.level_number.focus_set()
 
-
     def confirm_level(self):
-        """Makes sure that the level number entered is valid, else sets the level back to what it previously was"""
-
+        """Make sure that the level number entered is valid, else sets the level back to what it previously was"""
         try:
             self.parent.levels[self.parent.curr_level].grid_forget()
             if int(self.v.get())-1 <= len(self.parent.levels):
