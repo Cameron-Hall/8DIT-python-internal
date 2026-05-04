@@ -70,33 +70,33 @@ class Board:
             pass
         else:
             for k in range(i-1,-1,-1):
-                if self.colormap[k][j] in ["white", "blue"]:
+                if self.colormap[k][j] in ["white", "yellow"]:
                     self.pathmap[i][j]["up"] += 1
-                    if self.colormap[k][j-1] in ["white", "blue"] or self.colormap[k][j+1] in ["white", "blue"]:
+                    if self.colormap[k][j-1] in ["white", "yellow"] or self.colormap[k][j+1] in ["white", "yellow"]:
                         self.pathmap[i][j]["up_dead_end"] = False
                 else:
                     break
                     
             for k in range(i+1,15,1):
-                if self.colormap[k][j] in ["white", "blue"]:
+                if self.colormap[k][j] in ["white", "yellow"]:
                     self.pathmap[i][j]["down"] += 1
-                    if self.colormap[k][j-1] in ["white", "blue"] or self.colormap[k][j+1] in ["white", "blue"]:
+                    if self.colormap[k][j-1] in ["white", "yellow"] or self.colormap[k][j+1] in ["white", "yellow"]:
                         self.pathmap[i][j]["down_dead_end"] = False
                 else:
                     break
                     
             for k in range(j-1,-1,-1):
-                if self.colormap[i][k] in ["white", "blue"]:
+                if self.colormap[i][k] in ["white", "yellow"]:
                     self.pathmap[i][j]["left"] += 1
-                    if self.colormap[i-1][k] in ["white", "blue"] or self.colormap[i+1][k] in ["white", "blue"]:
+                    if self.colormap[i-1][k] in ["white", "yellow"] or self.colormap[i+1][k] in ["white", "yellow"]:
                         self.pathmap[i][j]["left_dead_end"] = False
                 else:
                     break                    
 
             for k in range(j+1,15,1):
-                if self.colormap[i][k] in ["white", "blue"]:
+                if self.colormap[i][k] in ["white", "yellow"]:
                     self.pathmap[i][j]["right"] += 1
-                    if self.colormap[i-1][k] in ["white", "blue"] or self.colormap[i+1][k] in ["white", "blue"]:
+                    if self.colormap[i-1][k] in ["white", "yellow"] or self.colormap[i+1][k] in ["white", "yellow"]:
                         self.pathmap[i][j]["right_dead_end"] = False
                 else:
                     break
@@ -319,6 +319,7 @@ class Character:
         
         if self.x == self.board.box.x and self.y == self.board.box.y:
             self.board.game.boxes += 1
+            self.board.game.toolbar.boxes_caught.configure(text=f"Boxes caught: {self.board.game.boxes}/{len(self.board.game.levels)}")
 
 
     def actuated_location_detection(self):
@@ -372,14 +373,14 @@ class Game:
                        "rrrrrrrrrrrrrrr","03:4,6:2,4:4,3"],
                        
                        ["rrrrrrrrrrrrrrr",
-                       "rwwrywwwrrrrrwr",
-                       "rwwwwwwwwwwwrwr",
+                       "rwwrwwwwrrrrrwr",
+                       "rwwwwywwwwwwrwr",
                        "rrrrrwwwrrrwwwr",
                        "rbwwwwrrrwrwwwr",
                        "rrwwwrrwwwrwwwr",
                        "rrrwrrwwwwwwwwr",
                        "rrwwrrrrrrrrrrr",
-                       "rrrrrrrrrrrrrrr","04:4,1:7,5:4,2"],
+                       "rrrrrrrrrrrrrrr","04:5,2:7,5:4,2"],
                        
                         ["rrrrrrrrrrrrrrr",
                        "rrrrrrwwwwwrrrr",
@@ -399,7 +400,7 @@ class Game:
                        "rrrrrrrwrrrrrrr",
                        "rrrrrrryrrrrrrr",
                        "rrrrrrrrrrrrrrr",
-                       "rrrrrrrrrrrrrrr","04:7,6:5,3:2,2"],
+                       "rrrrrrrrrrrrrrr","06:7,6:5,3:2,2"],
                        
                         ["rrrrrrrrrrrrrrr",
                        "rrrrrrrrrrrrrrr",
@@ -409,7 +410,7 @@ class Game:
                        "rrrrrrrwrrrrrrr",
                        "rrrrrrryrrrrrrr",
                        "rrrrrrrrrrrrrrr",
-                       "rrrrrrrrrrrrrrr","04:7,6:5,3:2,2"],
+                       "rrrrrrrrrrrrrrr","07:7,6:5,3:2,2"],
                        
                         ["rrrrrrrrrrrrrrr",
                        "rrrrrrrrrrrrrrr",
@@ -419,7 +420,7 @@ class Game:
                        "rrrrrrrwrrrrrrr",
                        "rrrrrrryrrrrrrr",
                        "rrrrrrrrrrrrrrr",
-                       "rrrrrrrrrrrrrrr","04:7,6:5,3:2,2"],
+                       "rrrrrrrrrrrrrrr","08:7,6:5,3:2,2"],
                        
                         ["rrrrrrrrrrrrrrr",
                        "rrrrrrrrrrrrrrr",
@@ -429,7 +430,7 @@ class Game:
                        "rrrrrrrwrrrrrrr",
                        "rrrrrrryrrrrrrr",
                        "rrrrrrrrrrrrrrr",
-                       "rrrrrrrrrrrrrrr","04:7,6:5,3:2,2"],
+                       "rrrrrrrrrrrrrrr","09:7,6:5,3:2,2"],
                        
                         ["rrrrrrrrrrrrrrr",
                        "rrrrrrrrrrrrrrr",
@@ -439,7 +440,7 @@ class Game:
                        "rrrrrrrwrrrrrrr",
                        "rrrrrrryrrrrrrr",
                        "rrrrrrrrrrrrrrr",
-                       "rrrrrrrrrrrrrrr","04:7,6:5,3:2,2"],]
+                       "rrrrrrrrrrrrrrr","10:7,6:5,3:2,2"],]
 
         for seed in self.seeds:
             self.levels.append(Frame(self.parent.mainframe))
@@ -608,6 +609,9 @@ class Toolbar:
         self.parent = parent
         self.GUI = GUI
         self.set_button()
+
+        self.boxes_caught = Label(self.frame, text=f"Boxes caught: {self.parent.boxes}/{len(self.parent.levels)}")
+        self.boxes_caught.grid(row=0, column=2)
 
 
     def set_button(self):
