@@ -1,4 +1,5 @@
 from tkinter import *
+from tkinter import messagebox
 
 
 class Board:
@@ -263,7 +264,6 @@ class Character:
         
         if self.x == self.board.box.x and self.y == self.board.box.y:
             self.board.game.boxes += 1
-            self.board.game.box_naming()
 
     def actuated_location_detection(self):
         if self.board.colormap[self.y][self.x] == "yellow":
@@ -294,6 +294,16 @@ class Game:
                        "rrrrrrrrrrrrrrr","01:2,4:7,4:4,5"],
                        
                       ["rrrrrrrrrrrrrrr",
+                       "rrrrrrrrrrrrrwr",
+                       "rrrryrrrwwwwwwr",
+                       "rrrrwrrrrrrwrrr",
+                       "rrrrwwwwwwrwrrr",
+                       "rrrrrrrrwrrwwwr",
+                       "rrrrbwwwwwwwrrr",
+                       "rrrrrrrrrrrrrrr",
+                       "rrrrrrrrrrrrrrr","02:4,2:7,4:5,6"],
+
+                       ["rrrrrrrrrrrrrrr",
                        "rrrrrrrrrrrrrrr",
                        "rrrrbrrrwwwwwrr",
                        "rwwrwrrrwrwrwrr",
@@ -301,17 +311,77 @@ class Game:
                        "rwwrwrrrrrwrrrr",
                        "rrrryrrrrwwwrrr",
                        "rrrrrrrrrrwrrrr",
-                       "rrrrrrrrrrrrrrr","02:4,6:2,4:4,3"],
+                       "rrrrrrrrrrrrrrr","03:4,6:2,4:4,3"],
                        
-                      ["rrrrrrrrrrrrrrr",
-                       "rrrrrrrrrrrrrwr",
-                       "rrrryrrrwwwwwwr",
-                       "rrrrwrrrwrrwrrr",
-                       "rrrrwwwwwwrwrrr",
-                       "rrrrrrrrwrrwwwr",
-                       "rrrrrrrbwwwwrrr",
+                       ["rrrrrrrrrrrrrrr",
+                       "rwwrywwwrrrrrwr",
+                       "rwwwwwwwwwwwrwr",
+                       "rrrrrwwwrrrwwwr",
+                       "rbwwwwrrrwrwwwr",
+                       "rrwwwrrwwwrwwwr",
+                       "rrrwrrwwwwwwwwr",
+                       "rrwwrrrrrrrrrrr",
+                       "rrrrrrrrrrrrrrr","04:4,1:7,5:4,2"],
+                       
+                        ["rrrrrrrrrrrrrrr",
+                       "rrrrrrwwwwwrrrr",
+                       "rwwwwwwrwrwwwbr",
+                       "rwrrrrwwwwwrrrr",
+                       "ryrrrrwrwrwwwrr",
+                       "rrrrrrwwwwwrwrr",
+                       "rwrrrrrrwrrrwrr",
+                       "rwwwwwwwwwwwwwr",
+                       "rrrrrrrrrrrrrrr","05:1,4:5,2:2,2"],
+                       
+                        ["rrrrrrrrrrrrrrr",
                        "rrrrrrrrrrrrrrr",
-                       "rrrrrrrrrrrrrrr","03:4,2:7,4:8,6"]]
+                       "rrrrrrrwrrrrrrr",
+                       "rrrrrrrwrrrrrrr",
+                       "rrrrrrrwrrrrrrr",
+                       "rrrrrrrwrrrrrrr",
+                       "rrrrrrryrrrrrrr",
+                       "rrrrrrrrrrrrrrr",
+                       "rrrrrrrrrrrrrrr","04:7,6:5,3:2,2"],
+                       
+                        ["rrrrrrrrrrrrrrr",
+                       "rrrrrrrrrrrrrrr",
+                       "rrrrrrrwrrrrrrr",
+                       "rrrrrrrwrrrrrrr",
+                       "rrrrrrrwrrrrrrr",
+                       "rrrrrrrwrrrrrrr",
+                       "rrrrrrryrrrrrrr",
+                       "rrrrrrrrrrrrrrr",
+                       "rrrrrrrrrrrrrrr","04:7,6:5,3:2,2"],
+                       
+                        ["rrrrrrrrrrrrrrr",
+                       "rrrrrrrrrrrrrrr",
+                       "rrrrrrrwrrrrrrr",
+                       "rrrrrrrwrrrrrrr",
+                       "rrrrrrrwrrrrrrr",
+                       "rrrrrrrwrrrrrrr",
+                       "rrrrrrryrrrrrrr",
+                       "rrrrrrrrrrrrrrr",
+                       "rrrrrrrrrrrrrrr","04:7,6:5,3:2,2"],
+                       
+                        ["rrrrrrrrrrrrrrr",
+                       "rrrrrrrrrrrrrrr",
+                       "rrrrrrrwrrrrrrr",
+                       "rrrrrrrwrrrrrrr",
+                       "rrrrrrrwrrrrrrr",
+                       "rrrrrrrwrrrrrrr",
+                       "rrrrrrryrrrrrrr",
+                       "rrrrrrrrrrrrrrr",
+                       "rrrrrrrrrrrrrrr","04:7,6:5,3:2,2"],
+                       
+                        ["rrrrrrrrrrrrrrr",
+                       "rrrrrrrrrrrrrrr",
+                       "rrrrrrrwrrrrrrr",
+                       "rrrrrrrwrrrrrrr",
+                       "rrrrrrrwrrrrrrr",
+                       "rrrrrrrwrrrrrrr",
+                       "rrrrrrryrrrrrrr",
+                       "rrrrrrrrrrrrrrr",
+                       "rrrrrrrrrrrrrrr","04:7,6:5,3:2,2"],]
 
         for seed in self.seeds:
             self.levels.append(Frame(self.parent.mainframe))
@@ -333,9 +403,7 @@ class Game:
         self.parent.parent.bind("<KeyRelease-d>", lambda i: self.b.character.move_right())
         self.parent.parent.bind("<KeyRelease-a>", lambda i: self.b.character.move_left())
         self.parent.parent.bind("<KeyRelease-f>", lambda i: self.b.character.actuated_location_detection())
-
-    def box_naming(self):
-        pass
+        self.parent.parent.bind("<Return>", lambda i: self.toolbar.confirm_level())
 
     def prev_level(self):
         self.levels[self.curr_level].grid_forget()
@@ -448,9 +516,36 @@ class Toolbar:
         self.frame = frame
         self.parent = parent
         self.GUI = GUI
+        self.set_button()
 
-        self.level_number = Label(self.frame, text=f"{self.parent.curr_level+1}")
+    def set_button(self):
+        self.level_number = Button(self.frame, width=10, text=f"{self.parent.curr_level+1}", command=self.change_level)
         self.level_number.grid(row=0, column=1)
+
+    def change_level(self):
+        self.v = StringVar()
+        self.level_number = Entry(self.frame, width=10, textvariable=self.v)
+        self.level_number.grid(row=0, column=1)
+        self.level_number.focus_set()
+
+    def confirm_level(self):
+        try:
+            self.parent.levels[self.parent.curr_level].grid_forget()
+            if int(self.v.get())-1 <= len(self.parent.levels):
+                self.parent.curr_level = int(self.v.get())-1 
+            else:
+                raise IndexError
+            self.parent.establish_board(None)
+            self.set_button()
+        except ValueError:
+            messagebox.showerror(title="Error", message="Invalid level")
+            self.parent.establish_board(None)
+            self.set_button()
+        except IndexError:
+            messagebox.showerror(title="Error", message=f"Level number too high! Maximum level is {len(self.parent.levels)}")
+            self.parent.establish_board(None)
+            self.set_button()
+
 
 
 if __name__ == "__main__":
