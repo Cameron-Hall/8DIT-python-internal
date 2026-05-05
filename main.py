@@ -117,7 +117,7 @@ class Box:
     def initiate_movement(self, dir):
         """Start the box's movement, repeating as many times as necesssary"""
         self.dir = dir
-        self.cycles += 1
+        self.cycles += 1  # used so that the box does not try to move forever into a wall when in a dead end
         if (self.detect_player() or self.board.pathmap[self.y][self.x]["tunnel"]) and self.cycles < 10:
             self.move_box() 
         
@@ -132,15 +132,15 @@ class Box:
     def player_visible(self):
         """Check the direction that the player is visible from, or if a wall blocks the detection"""
         if self.character.y in range(self.y-1, self.y - self.board.pathmap[self.y][self.x]["up"]-1, -1) and self.character.x == self.x:
-            return 0
+            return 0  # player is above
         elif self.character.y in range(self.y+1, self.y + self.board.pathmap[self.y][self.x]["down"]+1, 1) and self.character.x == self.x:
-            return 1
+            return 1  # player is below
         elif self.character.x in range(self.x+1, self.x + self.board.pathmap[self.y][self.x]["right"]+1, 1) and self.character.y == self.y:
-            return 2
+            return 2  # player is to the right
         elif self.character.x in range(self.x-1, self.x - self.board.pathmap[self.y][self.x]["left"]-1, -1) and self.character.y == self.y:
-            return 3
+            return 3  # player is to the left
         else: 
-            return 4
+            return 4  # player is not visible
 
     def move_box(self):
         """Move the box per strict rules. The movement is not random and is always predictable given the same circumstances"""
@@ -284,19 +284,18 @@ class Character:
 
     def repeated_location_detection(self):
         """Check the players location on each turn"""
-        if self.board.colormap[self.y][self.x] == "blue":
+        if self.board.colormap[self.y][self.x] == "blue":  # checking if the player is on the exit tile
             self.board.game.next_level()
         
-        if self.x == self.board.box.x and self.y == self.board.box.y and not self.caught_box:
+        if self.x == self.board.box.x and self.y == self.board.box.y and not self.caught_box:  # self.caught_box is used to make sure the player only catches a box once per level playthrough
             self.board.game.boxes += 1
             self.board.game.toolbar.boxes_caught.configure(text=f"Boxes caught: {self.board.game.boxes}")
             self.caught_box = True
 
     def actuated_location_detection(self):
         """Check the players location at certain moments"""
-        if self.board.colormap[self.y][self.x] == "yellow":
+        if self.board.colormap[self.y][self.x] == "yellow":  # checking if the player is on a yellow tile to go back a level
             self.board.game.prev_level()
-
 
     
 class Game:
@@ -318,10 +317,9 @@ class Game:
                        "rrrrwrrwrrrrrrr",
                        "rrrrbrrwrrrrrrr",
                        "rrrrrrrrrrrrrrr",
-                       "rrrrrrrrrrrrrrr","01:2,4:7,4:4,5"],
-                       
-                      ["rrrrrrrrrrrrrrr",
-                       "rrrrrrrrrrrrrwr",
+                       "rrrrrrrrrrrrrrr","01:2,4:7,4:4,5"],  # structure of the last item is level number:character x, character y:box x, box y: return character x, return character y
+                                                             # return character x and y are used for when the player goes back a level, so that they start in a different place to prevent them from just falling back down the hole
+                       ["rrrrrrrrrrrrrwr",
                        "rrrryrrrwwwwwwr",
                        "rrrrwrrrrrrwrrr",
                        "rrrrwwwwwwrwrrr",
@@ -426,6 +424,8 @@ class Game:
 
         self.toolbar.level_number.configure(text=self.curr_level+1)
 
+        # checking for keypresses and calling the respective functions
+
         self.parent.parent.bind("<KeyRelease-w>", lambda i: self.b.character.move_up())
         self.parent.parent.bind("<KeyRelease-s>", lambda i: self.b.character.move_down())
         self.parent.parent.bind("<KeyRelease-d>", lambda i: self.b.character.move_right())
@@ -435,7 +435,7 @@ class Game:
 
     def prev_level(self):
         """Initiates the previous level"""
-        self.levels[self.curr_level].grid_forget()
+        self.levels[self.curr_level].grid_forget()  # makes sure to remove the current level before showing the previous one
         self.curr_level -= 1
         self.establish_board("prev")
 
@@ -549,7 +549,7 @@ class Movement:
                 pass
 
 
-class Toolbar:
+class Toolbar:   # toolbar name is slightly outdated since it did used to have more functionality, but the name still works
     """Create a toolbar above the board"""
     def __init__(self, frame, parent, GUI):
         """Create the toolbar at the top of the game"""
