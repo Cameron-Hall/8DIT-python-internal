@@ -98,7 +98,7 @@ class Board:
                 else:
                     break
 
-            if (self.colormap[i+1][j] != "white" and self.colormap[i-1][j] != "white") or (self.colormap[i][j+1] != "white" and self.colormap[i][j-1] != "white"):
+            if (self.colormap[i+1][j] not in ["white", "yellow"] and self.colormap[i-1][j] not in ["white", "yellow"]) or (self.colormap[i][j+1] not in ["white", "yellow"] and self.colormap[i][j-1] not in ["white", "yellow"]):
                 self.pathmap[i][j]["tunnel"] = True
 
 
@@ -251,6 +251,7 @@ class Character:
         self.y = y
         self.board = board
         self.color = "black"
+        self.caught_box = False
         self.movement = Movement(self, self.board)
 
     def move_up(self):
@@ -286,9 +287,10 @@ class Character:
         if self.board.colormap[self.y][self.x] == "blue":
             self.board.game.next_level()
         
-        if self.x == self.board.box.x and self.y == self.board.box.y:
+        if self.x == self.board.box.x and self.y == self.board.box.y and not self.caught_box:
             self.board.game.boxes += 1
-            self.board.game.toolbar.boxes_caught.configure(text=f"Boxes caught: {self.board.game.boxes}/{len(self.board.game.levels)}")
+            self.board.game.toolbar.boxes_caught.configure(text=f"Boxes caught: {self.board.game.boxes}")
+            self.caught_box = True
 
     def actuated_location_detection(self):
         """Check the players location at certain moments"""
@@ -370,7 +372,7 @@ class Game:
                        
                         ["rrrrrrrrrrrrrrr",
                        "rrwwwwwrrrrwrrr",
-                       "rrwrrrwwwwwwrrr",
+                       "rrwrwrwwwwwwrrr",
                        "rryrwwwrrrrwrrr",
                        "rrrbwrwrwwrwrrr",
                        "rrrrwwwrwrwwrrr",
@@ -380,33 +382,33 @@ class Game:
                        
                         ["rrrrrrrrrrrrrrr",
                        "rrrrrrrrrrrrrrr",
-                       "rrrrrrrwrrrrrrr",
-                       "rrrrrrrwrrrrrrr",
-                       "rrrrrrrwrrrrrrr",
-                       "rrrrrrrwrrrrrrr",
-                       "rrrrrrryrrrrrrr",
-                       "rrrrrrrrrrrrrrr",
-                       "rrrrrrrrrrrrrrr","08:7,6:5,3:2,2"],
+                       "rrrrrrwwwrrrrrr",
+                       "rwwwwrwrrwwwwrr",
+                       "rwwywwwwrwrrwrr",
+                       "rrwwrwwwwwwwwrr",
+                       "rrwrrwrwwrrrwrr",
+                       "rrwwwwrbrrrrrrr",
+                       "rrrrrrrrrrrrrrr","08:3,4:9,3:7,7"],
                        
                         ["rrrrrrrrrrrrrrr",
-                       "rrrrrrrrrrrrrrr",
-                       "rrrrrrrwrrrrrrr",
-                       "rrrrrrrwrrrrrrr",
-                       "rrrrrrrwrrrrrrr",
-                       "rrrrrrrwrrrrrrr",
-                       "rrrrrrryrrrrrrr",
-                       "rrrrrrrrrrrrrrr",
-                       "rrrrrrrrrrrrrrr","09:7,6:5,3:2,2"],
+                       "rrrrrwwrrrrrrrr",
+                       "rwwwrrwrrrrrrrr",
+                       "rwrwrwwwwwwrrrr",
+                       "rwwwwwwwwwwwrrr",
+                       "rwrwrrrrwwrwrrr",
+                       "rwwwwwwwwwwwrrr",
+                       "rrrbrrryrrrrrrr",
+                       "rrrrrrrrrrrrrrr","09:7,7:2,2:3,7"],
                        
                         ["rrrrrrrrrrrrrrr",
-                       "rrrrrrrrrrrrrrr",
-                       "rrrrrrrwrrrrrrr",
-                       "rrrrrrrwrrrrrrr",
-                       "rrrrrrrwrrrrrrr",
-                       "rrrrrrrwrrrrrrr",
-                       "rrrrrrryrrrrrrr",
-                       "rrrrrrrrrrrrrrr",
-                       "rrrrrrrrrrrrrrr","10:7,6:5,3:2,2"],]
+                       "rrrrrrrrrwwwwwr",
+                       "rrwwwwwwwwrrrwr",
+                       "rwwwwrrwwwwwwwr",
+                       "rwrwrwwrwwrrwwr",
+                       "rwrrrrwwwwrrrwr",
+                       "rwwwwwwwwwwwwwr",
+                       "rrryrrrrrrrrrrr",
+                       "rrrrrrrrrrrrrrr","10:3,7:4,3:2,2"],]
 
         for seed in self.seeds:
             self.levels.append(Frame(self.parent.mainframe))
@@ -556,7 +558,7 @@ class Toolbar:
         self.GUI = GUI
         self.set_button()
 
-        self.boxes_caught = Label(self.frame, text=f"Boxes caught: {self.parent.boxes}/{len(self.parent.levels)}")
+        self.boxes_caught = Label(self.frame, text=f"Boxes caught: {self.parent.boxes}")
         self.boxes_caught.grid(row=0, column=2)
 
     def set_button(self):
@@ -575,10 +577,13 @@ class Toolbar:
         """Make sure that the level number entered is valid, else sets the level back to what it previously was"""
         try:
             self.parent.levels[self.parent.curr_level].grid_forget()
-            if int(self.v.get())-1 <= len(self.parent.levels):
+            print(self.parent.curr_level)
+            if int(self.v.get())-1 < len(self.parent.levels) and int(self.v.get())-1 > 0:
                 self.parent.curr_level = int(self.v.get())-1 
             else:
+                print(self.parent.curr_level)
                 raise IndexError
+               
             self.parent.establish_board(None)
             self.set_button()
         except ValueError:
@@ -587,12 +592,12 @@ class Toolbar:
             self.set_button()
         except IndexError:
             messagebox.showerror(title="Error", message=f"Level number too high! Maximum level is {len(self.parent.levels)}")
+            print(self.parent.curr_level)
             self.parent.establish_board(None)
             self.set_button()
 
 
-
-if __name__ == "__main__":
+if __name__ == "__main__":  # Main routine
     root = Tk()
     GUI(root)
     root.mainloop()
