@@ -60,6 +60,9 @@ class Board:
 
         self.tilemap[self.box.y][self.box.x].configure(bg="green")
 
+        self.tooltips = Label(self.game.levels[int(self.seed[(self.gui.WINDOW_HEIGHT-20)//self.game.TILE_SIZE][0:2])-1], text=self.seed[(self.gui.WINDOW_HEIGHT-20)//self.game.TILE_SIZE+1], wraplength=self.gui.WINDOW_WIDTH-20, justify="center")
+        self.tooltips.place(x=self.gui.WINDOW_WIDTH//2, y=self.gui.WINDOW_HEIGHT-50, anchor="center")
+
     def pathmap_update(self, i, j):
         """Establishes the pathmap information for each tile"""
         self.pathmap[i][j] = ({"up":0, "up_dead_end":True, "down":0, "down_dead_end":True, "left": 0, "left_dead_end":True, "right":0, "right_dead_end":True, "tunnel":False})
@@ -310,23 +313,29 @@ class Game:
         self.curr_level = 0
         self.levels = []
         self.seeds = [["rrrrrrrrrrrrrrr",
-                       "rrrrrrrrrwrwrrr",
-                       "rrrrrrrwwwwwwrr",
-                       "rrrrrrrrrrrwrrr",
+                       "rrrrbrrrrwrwrrr",
+                       "rrrrwrrwwwwwwrr",
+                       "rrrrwrrrrrrwrrr",
                        "rrwwwwwwwwwwwrr",
-                       "rrrrwrrwrrrrrrr",
-                       "rrrrbrrwrrrrrrr",
                        "rrrrrrrrrrrrrrr",
-                       "rrrrrrrrrrrrrrr","01:2,4:7,4:4,5"],  # structure of the last item is level number:character x, character y:box x, box y: return character x, return character y
+                       "rrrrrrrrrrrrrrr",
+                       "rrrrrrrrrrrrrrr",
+                       "rrrrrrrrrrrrrrr",
+                       "01:2,4:7,4:4,2",
+                       "Use WASD to move. You are the black tile. You must corner and capture the box, indicated by the green tile. Drop down to the next level by stepping on the blue tile once you have captured the box"],  
+                                                             # structure of the 2nd last item is level number:character x, character y:box x, box y: return character x, return character y
                                                              # return character x and y are used for when the player goes back a level, so that they start in a different place to prevent them from just falling back down the hole
-                       ["rrrrrrrrrrrrrwr",
+                       ["rrrrrrrrrrrrrrr",
+                       "rrrrrrrrrrrrrwr",
                        "rrrryrrrwwwwwwr",
                        "rrrrwrrrrrrwrrr",
                        "rrrrwwwwwwrwrrr",
-                       "rrrrrrrrwrrwwwr",
-                       "rrrrbwwwwwwwrrr",
+                       "rrrrwrrrwrrwwwr",
+                       "rrrrbrrrwwwwrrr",
                        "rrrrrrrrrrrrrrr",
-                       "rrrrrrrrrrrrrrr","02:4,2:7,4:5,6"],
+                       "rrrrrrrrrrrrrrr",
+                       "02:4,2:7,4:4,5",
+                       "The box always tries to go directly away from you first, then it will try going left and finally right. It will avoid obvious dead ends. Its movement is predictable."],
 
                        ["rrrrrrrrrrrrrrr",
                        "rrrrrrrrrrrrrrr",
@@ -336,7 +345,9 @@ class Game:
                        "rwwrwrrrrrwrrrr",
                        "rrrryrrrrwwwrrr",
                        "rrrrrrrrrrwrrrr",
-                       "rrrrrrrrrrrrrrr","03:4,6:2,4:4,3"],
+                       "rrrrrrrrrrrrrrr",
+                       "03:4,6:2,4:4,3",
+                       "You can press F on a yellow tile to head back up to the previous level. Alternatively, click the level number at the top of the screen to enter a specific level number. There are 10 levels."],
                        
                        ["rrrrrrrrrrrrrrr",
                        "rwwrwwwwrrrrrwr",
@@ -346,7 +357,9 @@ class Game:
                        "rrwwwrrwwwrwwwr",
                        "rrrwrrwwwwwwwwr",
                        "rrwwrrrrrrrrrrr",
-                       "rrrrrrrrrrrrrrr","04:5,2:7,5:4,2"],
+                       "rrrrrrrrrrrrrrr",
+                       "04:5,2:7,5:4,2",
+                       "Use what you learnt from the previous level to help you with this - line up the box and sneak behind it to force it forwards into an eventual dead end."],
                        
                         ["rrrrrrrrrrrrrrr",
                        "rrrrrrwwwwwrrrr",
@@ -356,7 +369,9 @@ class Game:
                        "rrrrrrwwwwwrwrr",
                        "rwrrrrrrwrrrwrr",
                        "rwwwwwwwwwwwwwr",
-                       "rrrrrrrrrrrrrrr","05:1,4:5,2:6,4"],
+                       "rrrrrrrrrrrrrrr",
+                       "05:1,4:5,2:6,4",
+                       "The box always tries to turn left at a T-junction - how can you use the map layout to make it ultimately go right?"],
                        
                         ["rrrrrrrrrrrrrrr",
                        "rrrrrrrwwwwrrrr",
@@ -366,7 +381,9 @@ class Game:
                        "rrwrrwrwwwwrrrr",
                        "rrwwwwwwwrwwrrr",
                        "rrrwrrrrrrrrrrr",
-                       "rrrrrrrrrrrrrrr","06:4,4:2,6:2,4"],
+                       "rrrrrrrrrrrrrrr",
+                       "06:4,4:2,6:2,4",
+                       "Past halfway now! This is where it starts to get trickier."],
                        
                         ["rrrrrrrrrrrrrrr",
                        "rrwwwwwrrrrwrrr",
@@ -376,7 +393,9 @@ class Game:
                        "rrrrwwwrwrwwrrr",
                        "rrrrrwwwwwwwrrr",
                        "rrrrrrrwwwwwrrr",
-                       "rrrrrrrrrrrrrrr","07:2,3:6,2:3,4"],
+                       "rrrrrrrrrrrrrrr",
+                       "07:2,3:6,2:3,4",
+                       "Precision matters."],
                        
                         ["rrrrrrrrrrrrrrr",
                        "rrrrrrrrrrrrrrr",
@@ -386,7 +405,9 @@ class Game:
                        "rrwwrwwwwwwwwrr",
                        "rrwrrwrwwrrrwrr",
                        "rrwwwwrbrrrrrrr",
-                       "rrrrrrrrrrrrrrr","08:3,4:9,3:7,7"],
+                       "rrrrrrrrrrrrrrr",
+                       "08:3,4:9,3:7,7",
+                       "The box can see you from left, right, up and down, but not diagonally. Use this to your advantage."],
                        
                         ["rrrrrrrrrrrrrrr",
                        "rrrrrwwrrrrrrrr",
@@ -396,7 +417,9 @@ class Game:
                        "rwrwrrrrwwrwrrr",
                        "rwwwwwwwwwwwrrr",
                        "rrrbrrryrrrrrrr",
-                       "rrrrrrrrrrrrrrr","09:7,7:2,2:3,7"],
+                       "rrrrrrrrrrrrrrr",
+                       "09:7,7:2,2:3,7",
+                       "Second last level!"],
                        
                         ["rrrrrrrrrrrrrrr",
                        "rrrrrrrrrwwwwwr",
@@ -406,7 +429,9 @@ class Game:
                        "rwrrrrwwwwrrrwr",
                        "rwwwwwwwwwwwwwr",
                        "rrryrrrrrrrrrrr",
-                       "rrrrrrrrrrrrrrr","10:3,7:4,3:2,2"],]
+                       "rrrrrrrrrrrrrrr",
+                       "10:3,7:4,3:2,2",
+                       "Final level. This one's the hardest yet."]]
 
         for seed in self.seeds:
             self.levels.append(Frame(self.parent.mainframe))
