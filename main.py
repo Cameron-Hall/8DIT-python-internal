@@ -568,8 +568,8 @@ class Toolbar:
 
     def change_level(self):
         """Change the level per the entry in the entry widget"""
-        self.v = StringVar()
-        self.level_number = Entry(self.frame, width=10, textvariable=self.v)
+        self.string_var = StringVar()
+        self.level_number = Entry(self.frame, width=10, textvariable=self.string_var)
         self.level_number.grid(row=0, column=1)
         self.level_number.focus_set()
 
@@ -577,22 +577,19 @@ class Toolbar:
         """Make sure that the level number entered is valid, else sets the level back to what it previously was"""
         try:
             self.parent.levels[self.parent.curr_level].grid_forget()
-            print(self.parent.curr_level)
-            if int(self.v.get())-1 < len(self.parent.levels) and int(self.v.get())-1 > 0:
-                self.parent.curr_level = int(self.v.get())-1 
+            if int(self.string_var.get())-1 < len(self.parent.levels) and int(self.string_var.get())-1 > 0:
+                self.parent.curr_level = int(self.string_var.get())-1 
             else:
-                print(self.parent.curr_level)
                 raise IndexError
                
             self.parent.establish_board(None)
             self.set_button()
         except ValueError:
-            messagebox.showerror(title="Error", message="Invalid level")
+            messagebox.showerror(title="Error", message=f"Invalid level! Please enter a valid number between 1 and {len(self.parent.levels)}")
             self.parent.establish_board(None)
             self.set_button()
         except IndexError:
-            messagebox.showerror(title="Error", message=f"Level number too high! Maximum level is {len(self.parent.levels)}")
-            print(self.parent.curr_level)
+            messagebox.showerror(title="Error", message=f"Invalid level number! Levels run from 1 to {len(self.parent.levels)}")
             self.parent.establish_board(None)
             self.set_button()
 
